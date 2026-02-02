@@ -85,6 +85,20 @@
             overflow: hidden;
         }
 
+        .camera-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .camera-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
         .camera-placeholder {
             color: #533483;
             font-size: 48px;
@@ -118,28 +132,28 @@
                 <div class="camera-header" id="camera1-header">Camera 1</div>
                 <div class="camera-display">
                     <div class="status-indicator"></div>
-                    <div class="camera-placeholder">📹</div>
+                    <img class="camera-image" id="camera1-video" src="" alt="Camera 1 Feed">
                 </div>
             </div>
             <div class="camera-feed">
                 <div class="camera-header" id="camera2-header">Camera 2</div>
                 <div class="camera-display">
                     <div class="status-indicator"></div>
-                    <div class="camera-placeholder">📹</div>
+                    <img class="camera-image" id="camera2-video" src="" alt="Camera 2 Feed">
                 </div>
             </div>
             <div class="camera-feed">
                 <div class="camera-header" id="camera3-header">Camera 3</div>
                 <div class="camera-display">
                     <div class="status-indicator"></div>
-                    <div class="camera-placeholder">📹</div>
+                    <img class="camera-image" id="camera3-video" src="" alt="Camera 3 Feed">
                 </div>
             </div>
             <div class="camera-feed">
                 <div class="camera-header" id="camera4-header">Camera 4</div>
                 <div class="camera-display">
                     <div class="status-indicator"></div>
-                    <div class="camera-placeholder">📹</div>
+                    <img class="camera-image" id="camera4-video" src="" alt="Camera 4 Feed">
                 </div>
             </div>
         </div>
@@ -275,7 +289,49 @@
         // Start polling when page loads
         window.addEventListener('load', () => {
             pollForCommands();
+            initializeCameras();
         });
+
+        // Camera stream URLs - Update these with your Raspberry Pi IP addresses
+        const cameraStreams = {
+            1: 'http://RASPBERRY_PI_1_IP:5001/video_feed',
+            2: 'http://RASPBERRY_PI_2_IP:5001/video_feed',
+            3: 'http://RASPBERRY_PI_3_IP:5001/video_feed',
+            4: 'http://RASPBERRY_PI_4_IP:5001/video_feed'
+        };
+
+        // Initialize camera feeds
+        function initializeCameras() {
+            // Set camera stream sources
+            for (let i = 1; i <= 4; i++) {
+                const img = document.getElementById(`camera${i}-video`);
+                img.src = cameraStreams[i];
+                
+                // Add error handler
+                img.onerror = function() {
+                    console.error(`Failed to load camera ${i} stream`);
+                    this.style.display = 'none';
+                    // Show placeholder or error message
+                    const display = this.parentElement;
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'camera-placeholder';
+                    placeholder.textContent = '📹';
+                    placeholder.style.color = '#ff6b6b';
+                    display.appendChild(placeholder);
+                };
+                
+                // Add load handler
+                img.onload = function() {
+                    console.log(`Camera ${i} stream loaded successfully`);
+                };
+            }
+        }
+
+        // Function to update camera stream URL
+        function setCameraStream(cameraNum, streamUrl) {
+            const img = document.getElementById(`camera${cameraNum}-video`);
+            img.src = streamUrl;
+        }
     </script>
 </body>
 </html>
