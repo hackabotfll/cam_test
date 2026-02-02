@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Monitor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .left-half {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .right-half {
+            flex: 1;
+            background: #1a1a2e;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .camera-feed {
+            background: #16213e;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s;
+        }
+
+        .camera-feed:hover {
+            transform: scale(1.02);
+        }
+
+        .camera-header {
+            color: #4ecca3;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #0f3460;
+            transition: color 0.3s;
+        }
+
+        .camera-header.alarm {
+            animation: flashRed 0.5s infinite;
+        }
+
+        @keyframes flashRed {
+            0%, 100% {
+                color: #ff0000;
+            }
+            50% {
+                color: #ff6b6b;
+            }
+        }
+
+        .camera-display {
+            flex: 1;
+            background: #0f3460;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .camera-placeholder {
+            color: #533483;
+            font-size: 48px;
+        }
+
+        .status-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 12px;
+            height: 12px;
+            background: #4ecca3;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="right-half">
+            <div class="camera-feed">
+                <div class="camera-header" id="camera1-header">Camera 1</div>
+                <div class="camera-display">
+                    <div class="status-indicator"></div>
+                    <div class="camera-placeholder">📹</div>
+                </div>
+            </div>
+            <div class="camera-feed">
+                <div class="camera-header" id="camera2-header">Camera 2</div>
+                <div class="camera-display">
+                    <div class="status-indicator"></div>
+                    <div class="camera-placeholder">📹</div>
+                </div>
+            </div>
+            <div class="camera-feed">
+                <div class="camera-header" id="camera3-header">Camera 3</div>
+                <div class="camera-display">
+                    <div class="status-indicator"></div>
+                    <div class="camera-placeholder">📹</div>
+                </div>
+            </div>
+            <div class="camera-feed">
+                <div class="camera-header" id="camera4-header">Camera 4</div>
+                <div class="camera-display">
+                    <div class="status-indicator"></div>
+                    <div class="camera-placeholder">📹</div>
+                </div>
+            </div>
+        </div>
+        <div class="left-half"></div>
+    </div>
+
+    <script>
+        // Create alarm sound using Web Audio API
+        let audioContext;
+        let alarmOscillator;
+        let alarmGain;
+        let isAlarmPlaying = false;
+
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playAlarmSound() {
+            if (isAlarmPlaying) return;
+            
+            initAudio();
+            isAlarmPlaying = true;
+
+            // Create oscillator for alarm sound
+            alarmOscillator = audioContext.createOscillator();
+            alarmGain = audioContext.createGain();
+
+            alarmOscillator.connect(alarmGain);
+            alarmGain.connect(audioContext.destination);
+
+            // Alarm sound configuration (alternating frequencies)
+            alarmOscillator.type = 'sine';
+            alarmOscillator.frequency.value = 800;
+            alarmGain.gain.value = 0.3;
+
+            alarmOscillator.start();
+
+            // Alternate between two frequencies for siren effect
+            let toggle = true;
+            const interval = setInterval(() => {
+                if (alarmOscillator) {
+                    alarmOscillator.frequency.value = toggle ? 800 : 1000;
+                    toggle = !toggle;
+                }
+            }, 300);
+
+            // Store interval for cleanup
+            alarmOscillator.intervalId = interval;
+        }
+
+        function stopAlarmSound() {
+            if (!isAlarmPlaying) return;
+            
+            isAlarmPlaying = false;
+            
+            if (alarmOscillator) {
+                clearInterval(alarmOscillator.intervalId);
+                alarmOscillator.stop();
+                alarmOscillator.disconnect();
+                alarmOscillator = null;
+            }
+            
+            if (alarmGain) {
+                alarmGain.disconnect();
+                alarmGain = null;
+            }
+        }
+
+        // Trigger alarm for a specific camera
+        function triggerAlarm(cameraNumber) {
+            const header = document.getElementById(`camera${cameraNumber}-header`);
+            header.classList.add('alarm');
+            playAlarmSound();
+        }
+
+        // Clear alarm for a specific camera
+        function clearAlarm(cameraNumber) {
+            const header = document.getElementById(`camera${cameraNumber}-header`);
+            header.classList.remove('alarm');
+            
+            // Check if any camera still has an alarm
+            const anyAlarm = document.querySelector('.camera-header.alarm');
+            if (!anyAlarm) {
+                stopAlarmSound();
+            }
+        }
+
+        // Clear all alarms
+        function clearAllAlarms() {
+            document.querySelectorAll('.camera-header').forEach(header => {
+                header.classList.remove('alarm');
+            });
+            stopAlarmSound();
+        }
+
+        // Poll for commands from server
+        async function pollForCommands() {
+            try {
+                const response = await fetch('/api/commands', {
+                    method: 'GET'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.command) {
+                        handleCommand(data.command);
+                    }
+                }
+            } catch (error) {
+                // Server not available, that's okay
+            }
+            
+            // Poll every 500ms
+            setTimeout(pollForCommands, 500);
+        }
+
+        function handleCommand(command) {
+            console.log('Received command:', command);
+            
+            if (command === 'clear_all_alarms') {
+                clearAllAlarms();
+            } else if (command.startsWith('trigger_alarm_')) {
+                const cameraNum = command.replace('trigger_alarm_', '');
+                triggerAlarm(parseInt(cameraNum));
+            } else if (command.startsWith('clear_alarm_')) {
+                const cameraNum = command.replace('clear_alarm_', '');
+                clearAlarm(parseInt(cameraNum));
+            }
+        }
+
+        // Start polling when page loads
+        window.addEventListener('load', () => {
+            pollForCommands();
+        });
+    </script>
+</body>
+</html>
