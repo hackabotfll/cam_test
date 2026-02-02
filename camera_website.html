@@ -65,6 +65,10 @@
             animation: flashRed 0.5s infinite;
         }
 
+        .camera-header.offline {
+            color: #ff0000;
+        }
+
         @keyframes flashRed {
             0%, 100% {
                 color: #ff0000;
@@ -312,6 +316,7 @@
             for (let i = 1; i <= 4; i++) {
                 const img = document.getElementById(`camera${i}-video`);
                 const status = document.getElementById(`camera${i}-status`);
+                const header = document.getElementById(`camera${i}-header`);
                 img.src = cameraStreams[i];
                 
                 // Add error handler
@@ -319,6 +324,8 @@
                     console.error(`Failed to load camera ${i} stream`);
                     // Turn status indicator red
                     status.classList.add('offline');
+                    // Turn camera name red
+                    header.classList.add('offline');
                     
                     this.style.display = 'none';
                     // Show placeholder or error message
@@ -333,8 +340,9 @@
                 // Add load handler
                 img.onload = function() {
                     console.log(`Camera ${i} stream loaded successfully`);
-                    // Keep status indicator green (remove offline class if it was added)
+                    // Keep status indicator green and name green (remove offline class if it was added)
                     status.classList.remove('offline');
+                    header.classList.remove('offline');
                 };
             }
         }
@@ -343,9 +351,11 @@
         function setCameraStream(cameraNum, streamUrl) {
             const img = document.getElementById(`camera${cameraNum}-video`);
             const status = document.getElementById(`camera${cameraNum}-status`);
+            const header = document.getElementById(`camera${cameraNum}-header`);
             
-            // Reset status to green when changing stream
+            // Reset status and name to green when changing stream
             status.classList.remove('offline');
+            header.classList.remove('offline');
             img.src = streamUrl;
         }
     </script>
