@@ -113,6 +113,12 @@
             background: #4ecca3;
             border-radius: 50%;
             animation: pulse 2s infinite;
+            z-index: 10;
+        }
+
+        .status-indicator.offline {
+            background: #ff0000;
+            animation: none;
         }
 
         @keyframes pulse {
@@ -131,28 +137,28 @@
             <div class="camera-feed">
                 <div class="camera-header" id="camera1-header">Camera 1</div>
                 <div class="camera-display">
-                    <div class="status-indicator"></div>
+                    <div class="status-indicator" id="camera1-status"></div>
                     <img class="camera-image" id="camera1-video" src="" alt="Camera 1 Feed">
                 </div>
             </div>
             <div class="camera-feed">
                 <div class="camera-header" id="camera2-header">Camera 2</div>
                 <div class="camera-display">
-                    <div class="status-indicator"></div>
+                    <div class="status-indicator" id="camera2-status"></div>
                     <img class="camera-image" id="camera2-video" src="" alt="Camera 2 Feed">
                 </div>
             </div>
             <div class="camera-feed">
                 <div class="camera-header" id="camera3-header">Camera 3</div>
                 <div class="camera-display">
-                    <div class="status-indicator"></div>
+                    <div class="status-indicator" id="camera3-status"></div>
                     <img class="camera-image" id="camera3-video" src="" alt="Camera 3 Feed">
                 </div>
             </div>
             <div class="camera-feed">
                 <div class="camera-header" id="camera4-header">Camera 4</div>
                 <div class="camera-display">
-                    <div class="status-indicator"></div>
+                    <div class="status-indicator" id="camera4-status"></div>
                     <img class="camera-image" id="camera4-video" src="" alt="Camera 4 Feed">
                 </div>
             </div>
@@ -305,11 +311,15 @@
             // Set camera stream sources
             for (let i = 1; i <= 4; i++) {
                 const img = document.getElementById(`camera${i}-video`);
+                const status = document.getElementById(`camera${i}-status`);
                 img.src = cameraStreams[i];
                 
                 // Add error handler
                 img.onerror = function() {
                     console.error(`Failed to load camera ${i} stream`);
+                    // Turn status indicator red
+                    status.classList.add('offline');
+                    
                     this.style.display = 'none';
                     // Show placeholder or error message
                     const display = this.parentElement;
@@ -323,6 +333,8 @@
                 // Add load handler
                 img.onload = function() {
                     console.log(`Camera ${i} stream loaded successfully`);
+                    // Keep status indicator green (remove offline class if it was added)
+                    status.classList.remove('offline');
                 };
             }
         }
@@ -330,6 +342,10 @@
         // Function to update camera stream URL
         function setCameraStream(cameraNum, streamUrl) {
             const img = document.getElementById(`camera${cameraNum}-video`);
+            const status = document.getElementById(`camera${cameraNum}-status`);
+            
+            // Reset status to green when changing stream
+            status.classList.remove('offline');
             img.src = streamUrl;
         }
     </script>
