@@ -171,6 +171,9 @@
     </div>
 
     <script>
+        // API Configuration
+        const API_URL = 'https://api.hackabot4stem.com';
+        
         // Create alarm sound using Web Audio API
         let audioContext;
         let alarmOscillator;
@@ -261,10 +264,10 @@
             stopAlarmSound();
         }
 
-        // Poll for commands from server
+        // Poll for commands from relay server
         async function pollForCommands() {
             try {
-                const response = await fetch('/api/commands', {
+                const response = await fetch(`${API_URL}/api/commands`, {
                     method: 'GET'
                 });
                 
@@ -275,7 +278,7 @@
                     }
                 }
             } catch (error) {
-                // Server not available, that's okay
+                console.error('Error polling for commands:', error);
             }
             
             // Poll every 500ms
@@ -296,68 +299,171 @@
             }
         }
 
-        // Start polling when page loads
-        window.addEventListener('load', () => {
-            pollForCommands();
-            initializeCameras();
-        });
+        // Check camera status periodically
+        async function checkCameraStatus() {
+            try {
+                const response = await fetch(`${API_URL}/status`);
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Update status indicators based on camera online status
+                    for (let i = 1; i <= 4; i++) {
+                        const status = document.getElementById(`camera${i}-status`);
+                        const header = document.getElementById(`camera${i}-header`);
+                        
+                        if (data.cameras && data.cameras[i]) {
+                            const camera = data.cameras[i];
+                            
+                            if (camera.online) {
+                                status.classList.remove('offline');
+                                if (!header.classList.contains('alarm')) {
+                                    header.classList.remove('offline');
+                                }
+                            } else {
+                                status.classList.add('offline');
+                                if (!header.classList.contains('alarm')) {
+                                    header.classList.add('offline');
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking camera status:', error);
+            }
+            
+            // Check status every 5 seconds
+            setTimeout(checkCameraStatus, 5000);
+        }
 
-        // Camera stream URLs - Update these with your Raspberry Pi IP addresses
-        const cameraStreams = {
-            1: 'http://RASPBERRY_PI_1_IP:5001/video_feed',
-            2: 'http://RASPBERRY_PI_2_IP:5001/video_feed',
-            3: 'http://RASPBERRY_PI_3_IP:5001/video_feed',
-            4: 'http://RASPBERRY_PI_4_IP:5001/video_feed'
-        };
+        // Initialize camera feeds from relay server
+        async function initializeCameras() {
+            try {
+                // Fetch camera stream URLs from relay server
+                const response = await fetch(`${API_URL}/api/camera_streams`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Camera streams:', data);
+                    
+                    // Set up each camera
+                    for (let i = 1; i <= 4; i++) {
+                        const img = document.getElementById(`camera${i}-video`);
+                        const status = document.getElementById(`camera${i}-status`);
+                        const header = document.getElementById(`camera${i}-header`);
+                        
+                        // Use the relay server's video proxy endpoint
+                        // This way the video comes through cam.hackabot4stem.com domain
+                        img.src = `${API_URL}/video_feed/${i}`;
+                        
+                        // Add error handler
+                        img.onerror = function() {
+                            console.error(`Failed to load camera ${i} stream`);
+                            status.classList.add('offline');
+                            if (!header.classList.contains('alarm')) {
+                                header.classList.add('offline');
+                            }
+                            
+                            this.style.display = 'none';
+                            const display = this.parentElement;
+                            
+                            // Remove any existing placeholder
+                            const existingPlaceholder = display.querySelector('.camera-placeholder');
+                            if (existingPlaceholder) {
+                                existingPlaceholder.remove();
+                            }
+                            
+                            const placeholder = document.createElement('div');
+                            placeholder.className = 'camera-placeholder';
+                            placeholder.textContent = '📹';
+                            placeholder.style.color = '#ff6b6b';
+                            display.appendChild(placeholder);
+                        };
+                        
+                        // Add load handler
+                        img.onload = function() {
+                            console.log(`Camera ${i} stream loaded successfully`);
+                            status.classList.remove('offline');
+                            if (!header.classList.contains('alarm')) {
+                                header.classList.remove('offline');
+                            }
+                            this.style.display = 'block';
+                            
+                            // Remove placeholder if it exists
+                            const display = this.parentElement;
+                            const placeholder = display.querySelector('.camera-placeholder');
+                            if (placeholder) {
+                                placeholder.remove();
+                            }
+                        };
+                    }
+                } else {
+                    console.error('Failed to fetch camera streams from relay');
+                    // Fall back to default configuration
+                    fallbackCameraSetup();
+                }
+            } catch (error) {
+                console.error('Error initializing cameras:', error);
+                fallbackCameraSetup();
+            }
+        }
 
-        // Initialize camera feeds
-        function initializeCameras() {
-            // Set camera stream sources
+        // Fallback camera setup if relay is unavailable
+        function fallbackCameraSetup() {
+            console.log('Using fallback camera setup');
             for (let i = 1; i <= 4; i++) {
                 const img = document.getElementById(`camera${i}-video`);
                 const status = document.getElementById(`camera${i}-status`);
                 const header = document.getElementById(`camera${i}-header`);
-                img.src = cameraStreams[i];
                 
-                // Add error handler
-                img.onerror = function() {
-                    console.error(`Failed to load camera ${i} stream`);
-                    // Turn status indicator red
-                    status.classList.add('offline');
-                    // Turn camera name red
+                // Use relay proxy as fallback
+                img.src = `${API_URL}/video_feed/${i}`;
+                
+                status.classList.add('offline');
+                if (!header.classList.contains('alarm')) {
                     header.classList.add('offline');
-                    
-                    this.style.display = 'none';
-                    // Show placeholder or error message
-                    const display = this.parentElement;
-                    const placeholder = document.createElement('div');
-                    placeholder.className = 'camera-placeholder';
-                    placeholder.textContent = '📹';
-                    placeholder.style.color = '#ff6b6b';
-                    display.appendChild(placeholder);
-                };
-                
-                // Add load handler
-                img.onload = function() {
-                    console.log(`Camera ${i} stream loaded successfully`);
-                    // Keep status indicator green and name green (remove offline class if it was added)
-                    status.classList.remove('offline');
-                    header.classList.remove('offline');
-                };
+                }
             }
         }
 
-        // Function to update camera stream URL
-        function setCameraStream(cameraNum, streamUrl) {
-            const img = document.getElementById(`camera${cameraNum}-video`);
-            const status = document.getElementById(`camera${cameraNum}-status`);
-            const header = document.getElementById(`camera${cameraNum}-header`);
+        // Start polling and monitoring when page loads
+        window.addEventListener('load', () => {
+            console.log('Initializing camera system...');
+            console.log('API URL:', API_URL);
             
-            // Reset status and name to green when changing stream
-            status.classList.remove('offline');
-            header.classList.remove('offline');
-            img.src = streamUrl;
+            initializeCameras();
+            pollForCommands();
+            checkCameraStatus();
+        });
+
+        // Manual trigger functions (for testing/debugging)
+        function manualTriggerAlarm(cameraNum) {
+            fetch(`${API_URL}/api/trigger_alarm_${cameraNum}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => console.log('Manual trigger:', data))
+                .catch(error => console.error('Manual trigger error:', error));
         }
+
+        function manualClearAlarm(cameraNum) {
+            fetch(`${API_URL}/api/clear_alarm_${cameraNum}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => console.log('Manual clear:', data))
+                .catch(error => console.error('Manual clear error:', error));
+        }
+
+        function manualClearAllAlarms() {
+            fetch(`${API_URL}/api/clear_all_alarms`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => console.log('Manual clear all:', data))
+                .catch(error => console.error('Manual clear all error:', error));
+        }
+
+        // Expose functions to console for debugging
+        window.cameraDebug = {
+            triggerAlarm: manualTriggerAlarm,
+            clearAlarm: manualClearAlarm,
+            clearAll: manualClearAllAlarms
+        };
     </script>
 </body>
 </html>
