@@ -443,12 +443,15 @@
             
             if (command === 'clear_all_alarms') {
                 clearAllAlarms();
+                updateMaximizedAlarmState();
             } else if (command.startsWith('trigger_alarm_')) {
                 const cameraNum = command.replace('trigger_alarm_', '');
                 triggerAlarm(parseInt(cameraNum));
+                updateMaximizedAlarmState();
             } else if (command.startsWith('clear_alarm_')) {
                 const cameraNum = command.replace('clear_alarm_', '');
                 clearAlarm(parseInt(cameraNum));
+                updateMaximizedAlarmState();
             }
         }
 
@@ -460,7 +463,7 @@
                     const data = await response.json();
                     
                     // Update status indicators based on camera online status
-                    for (let i = 1; i <= 4; i++) {
+                    for (let i = 1; i <= 8; i++) {
                         const status = document.getElementById(`camera${i}-status`);
                         const header = document.getElementById(`camera${i}-header`);
                         
@@ -480,6 +483,9 @@
                             }
                         }
                     }
+                    
+                    // Update maximized view if one is open
+                    updateMaximizedOnlineState();
                 }
             } catch (error) {
                 console.error('Error checking camera status:', error);
@@ -727,38 +733,12 @@
             }
         }
 
-        // Override trigger/clear alarm functions to update maximized view
-        const originalTriggerAlarm = triggerAlarm;
-        triggerAlarm = function(cameraNumber) {
-            originalTriggerAlarm(cameraNumber);
-            updateMaximizedAlarmState();
-        };
-
-        const originalClearAlarm = clearAlarm;
-        clearAlarm = function(cameraNumber) {
-            originalClearAlarm(cameraNumber);
-            updateMaximizedAlarmState();
-        };
-
-        const originalClearAllAlarms = clearAllAlarms;
-        clearAllAlarms = function() {
-            originalClearAllAlarms();
-            updateMaximizedAlarmState();
-        };
-
         // Close maximized view with Escape key
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape' && currentMaximizedCamera) {
                 closeMaximized();
             }
         });
-
-        // Periodically update maximized view status
-        setInterval(() => {
-            if (currentMaximizedCamera) {
-                updateMaximizedOnlineState();
-            }
-        }, 1000);
     </script>
 </body>
 </html>
