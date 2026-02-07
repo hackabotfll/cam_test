@@ -125,68 +125,16 @@
             border-radius: 8px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
             overflow: hidden;
             position: relative;
         }
 
         .video-panel {
-            flex: 3;
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
-        }
-
-        .metadata-panel {
-            flex: 1;
-            background: #0a2540;
-            border-radius: 8px;
-            padding: 20px;
-            overflow-y: auto;
-            color: #00ff00;
-            font-family: 'Courier New', 'Consolas', monospace;
-            font-size: 14px;
-            line-height: 1.6;
-        }
-
-        .metadata-panel h3 {
-            color: #4ecca3;
-            margin-bottom: 15px;
-            font-size: 16px;
-            border-bottom: 2px solid #0f3460;
-            padding-bottom: 8px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto;
-        }
-
-        .json-display {
-            background: #000000;
-            border: 1px solid #333;
-            border-radius: 4px;
-            padding: 15px;
-            overflow-x: auto;
-            white-space: pre;
-            color: #00ff00;
-        }
-
-        .json-key {
-            color: #667eea;
-        }
-
-        .json-string {
-            color: #4ecca3;
-        }
-
-        .json-number {
-            color: #ffaa00;
-        }
-
-        .json-boolean {
-            color: #ff6b6b;
-        }
-
-        .json-null {
-            color: #888;
         }
 
         .maximized-video {
@@ -370,12 +318,6 @@
                 <div class="video-panel">
                     <div class="maximized-status" id="maximized-status"></div>
                     <img class="maximized-video" id="maximized-video" src="" alt="Maximized Camera Feed">
-                </div>
-                <div class="metadata-panel" id="metadata-panel">
-                    <h3>📡 Camera API Response</h3>
-                    <div id="metadata-content">
-                        <div class="json-display">Loading...</div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -678,83 +620,6 @@
 
         // Camera maximize functionality
         let currentMaximizedCamera = null;
-        let metadataUpdateInterval = null;
-
-        async function fetchCameraMetadata(cameraNum) {
-            try {
-                const response = await fetch(`${API_URL}/status`);
-                if (response.ok) {
-                    const data = await response.json();
-                    return data.cameras[cameraNum];
-                }
-            } catch (error) {
-                console.error('Error fetching camera metadata:', error);
-            }
-            return null;
-        }
-
-        function syntaxHighlightJSON(json) {
-            if (typeof json !== 'string') {
-                json = JSON.stringify(json, null, 2);
-            }
-            
-            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            
-            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
-                let cls = 'json-number';
-                if (/^"/.test(match)) {
-                    if (/:$/.test(match)) {
-                        cls = 'json-key';
-                    } else {
-                        cls = 'json-string';
-                    }
-                } else if (/true|false/.test(match)) {
-                    cls = 'json-boolean';
-                } else if (/null/.test(match)) {
-                    cls = 'json-null';
-                }
-                return '<span class="' + cls + '">' + match + '</span>';
-            });
-        }
-
-        function updateMetadataDisplay(metadata, cameraNum) {
-            const metadataContent = document.getElementById('metadata-content');
-            
-            if (!metadata) {
-                metadataContent.innerHTML = `
-                    <div class="json-display">
-                        <span class="json-key">"status"</span>: <span class="json-string">"offline"</span>,
-                        <span class="json-key">"camera"</span>: <span class="json-number">${cameraNum}</span>,
-                        <span class="json-key">"error"</span>: <span class="json-string">"No data available"</span>
-                    </div>
-                `;
-                return;
-            }
-
-            // Create full JSON object with additional info
-            const fullData = {
-                camera_number: cameraNum,
-                timestamp: new Date().toISOString(),
-                status: {
-                    online: metadata.online,
-                    alarm_active: metadata.alarm_active,
-                    has_frames: metadata.has_frames,
-                    last_seen_seconds_ago: metadata.last_seen_seconds_ago
-                },
-                stream_url: `${API_URL}/video_feed/${cameraNum}`,
-                api_endpoints: {
-                    video_feed: `/video_feed/${cameraNum}`,
-                    trigger_alarm: `/camera/trigger_alarm/${cameraNum}`,
-                    clear_alarm: `/camera/clear_alarm/${cameraNum}`,
-                    heartbeat: `/camera/heartbeat/${cameraNum}`,
-                    push_frame: `/camera/push_frame/${cameraNum}`
-                }
-            };
-
-            const highlighted = syntaxHighlightJSON(fullData);
-            
-            metadataContent.innerHTML = `<div class="json-display">${highlighted}</div>`;
-        }
 
         function maximizeCamera(cameraNum) {
             currentMaximizedCamera = cameraNum;
@@ -796,17 +661,6 @@
             // Show overlay
             overlay.classList.add('active');
             
-            // Start metadata updates
-            fetchCameraMetadata(cameraNum).then(metadata => {
-                updateMetadataDisplay(metadata, cameraNum);
-            });
-            
-            // Update metadata every second
-            metadataUpdateInterval = setInterval(async () => {
-                const metadata = await fetchCameraMetadata(cameraNum);
-                updateMetadataDisplay(metadata, cameraNum);
-            }, 1000);
-            
             // Add error handler
             video.onerror = function() {
                 console.error(`Failed to load maximized camera ${cameraNum} stream`);
@@ -825,12 +679,6 @@
             overlay.classList.remove('active');
             video.src = '';
             currentMaximizedCamera = null;
-            
-            // Stop metadata updates
-            if (metadataUpdateInterval) {
-                clearInterval(metadataUpdateInterval);
-                metadataUpdateInterval = null;
-            }
         }
 
         // Update maximized view when alarm state changes
