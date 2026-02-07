@@ -22,17 +22,13 @@
             height: 100vh;
         }
 
-        .left-half {
-            flex: 1;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
         .right-half {
             flex: 1;
+            width: 100vw;
             background: #1a1a2e;
             padding: 20px;
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             grid-template-rows: repeat(2, 1fr);
             gap: 20px;
         }
@@ -97,6 +93,10 @@
             color: #4ecca3;
             font-size: 24px;
             font-weight: 600;
+        }
+
+        .maximized-title.offline {
+            color: #ff0000;
         }
 
         .maximized-title.alarm {
@@ -328,8 +328,35 @@
                     <img class="camera-image" id="camera4-video" src="" alt="Camera 4 Feed">
                 </div>
             </div>
+            <div class="camera-feed" onclick="maximizeCamera(5)">
+                <div class="camera-header" id="camera5-header">Camera 5</div>
+                <div class="camera-display">
+                    <div class="status-indicator" id="camera5-status"></div>
+                    <img class="camera-image" id="camera5-video" src="" alt="Camera 5 Feed">
+                </div>
+            </div>
+            <div class="camera-feed" onclick="maximizeCamera(6)">
+                <div class="camera-header" id="camera6-header">Camera 6</div>
+                <div class="camera-display">
+                    <div class="status-indicator" id="camera6-status"></div>
+                    <img class="camera-image" id="camera6-video" src="" alt="Camera 6 Feed">
+                </div>
+            </div>
+            <div class="camera-feed" onclick="maximizeCamera(7)">
+                <div class="camera-header" id="camera7-header">Camera 7</div>
+                <div class="camera-display">
+                    <div class="status-indicator" id="camera7-status"></div>
+                    <img class="camera-image" id="camera7-video" src="" alt="Camera 7 Feed">
+                </div>
+            </div>
+            <div class="camera-feed" onclick="maximizeCamera(8)">
+                <div class="camera-header" id="camera8-header">Camera 8</div>
+                <div class="camera-display">
+                    <div class="status-indicator" id="camera8-status"></div>
+                    <img class="camera-image" id="camera8-video" src="" alt="Camera 8 Feed">
+                </div>
+            </div>
         </div>
-        <div class="left-half"></div>
     </div>
 
     <!-- Maximized Camera Overlay -->
@@ -530,8 +557,8 @@
                     const data = await response.json();
                     console.log('Camera streams:', data);
                     
-                    // Set up each camera
-                    for (let i = 1; i <= 4; i++) {
+                    // Set up each camera (now supporting 8 cameras)
+                    for (let i = 1; i <= 8; i++) {
                         const img = document.getElementById(`camera${i}-video`);
                         const status = document.getElementById(`camera${i}-status`);
                         const header = document.getElementById(`camera${i}-header`);
@@ -595,7 +622,7 @@
         // Fallback camera setup if relay is unavailable
         function fallbackCameraSetup() {
             console.log('Using fallback camera setup');
-            for (let i = 1; i <= 4; i++) {
+            for (let i = 1; i <= 8; i++) {
                 const img = document.getElementById(`camera${i}-video`);
                 const status = document.getElementById(`camera${i}-status`);
                 const header = document.getElementById(`camera${i}-header`);
@@ -740,7 +767,7 @@
             // Set title
             title.textContent = `Camera ${cameraNum}`;
             
-            // Copy alarm state
+            // Copy alarm state from grid view
             const header = document.getElementById(`camera${cameraNum}-header`);
             if (header.classList.contains('alarm')) {
                 title.classList.add('alarm');
@@ -748,7 +775,14 @@
                 title.classList.remove('alarm');
             }
             
-            // Copy online/offline status
+            // Copy offline state from grid view  
+            if (header.classList.contains('offline')) {
+                title.classList.add('offline');
+            } else {
+                title.classList.remove('offline');
+            }
+            
+            // Copy online/offline status indicator
             const statusIndicator = document.getElementById(`camera${cameraNum}-status`);
             if (statusIndicator.classList.contains('offline')) {
                 status.classList.add('offline');
@@ -805,10 +839,18 @@
                 const title = document.getElementById('maximized-title');
                 const header = document.getElementById(`camera${currentMaximizedCamera}-header`);
                 
+                // Sync alarm state
                 if (header.classList.contains('alarm')) {
                     title.classList.add('alarm');
                 } else {
                     title.classList.remove('alarm');
+                }
+                
+                // Sync offline state
+                if (header.classList.contains('offline')) {
+                    title.classList.add('offline');
+                } else {
+                    title.classList.remove('offline');
                 }
             }
         }
@@ -816,13 +858,23 @@
         // Update maximized view when online status changes
         function updateMaximizedOnlineState() {
             if (currentMaximizedCamera) {
+                const title = document.getElementById('maximized-title');
                 const status = document.getElementById('maximized-status');
+                const header = document.getElementById(`camera${currentMaximizedCamera}-header`);
                 const statusIndicator = document.getElementById(`camera${currentMaximizedCamera}-status`);
                 
+                // Sync status indicator (green/red dot)
                 if (statusIndicator.classList.contains('offline')) {
                     status.classList.add('offline');
                 } else {
                     status.classList.remove('offline');
+                }
+                
+                // Sync title offline state (red text)
+                if (header.classList.contains('offline')) {
+                    title.classList.add('offline');
+                } else {
+                    title.classList.remove('offline');
                 }
             }
         }
