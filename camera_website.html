@@ -49,6 +49,168 @@
 
         .camera-feed:hover {
             transform: scale(1.02);
+            cursor: pointer;
+        }
+
+        /* Maximized camera view */
+        .camera-maximized-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s;
+        }
+
+        .camera-maximized-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .maximized-content {
+            width: 100vw;
+            height: 100vh;
+            background: #16213e;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .maximized-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .maximized-title {
+            color: #4ecca3;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .maximized-title.alarm {
+            animation: flashRed 0.5s infinite;
+        }
+
+        .close-button {
+            background: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .close-button:hover {
+            background: #ff6b81;
+        }
+
+        .maximized-video-container {
+            flex: 1;
+            background: #0f3460;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .video-panel {
+            flex: 3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .metadata-panel {
+            flex: 1;
+            background: #0a2540;
+            border-radius: 8px;
+            padding: 20px;
+            overflow-y: auto;
+            color: #00ff00;
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .metadata-panel h3 {
+            color: #4ecca3;
+            margin-bottom: 15px;
+            font-size: 16px;
+            border-bottom: 2px solid #0f3460;
+            padding-bottom: 8px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto;
+        }
+
+        .json-display {
+            background: #000000;
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 15px;
+            overflow-x: auto;
+            white-space: pre;
+            color: #00ff00;
+        }
+
+        .json-key {
+            color: #667eea;
+        }
+
+        .json-string {
+            color: #4ecca3;
+        }
+
+        .json-number {
+            color: #ffaa00;
+        }
+
+        .json-boolean {
+            color: #ff6b6b;
+        }
+
+        .json-null {
+            color: #888;
+        }
+
+        .maximized-video {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .maximized-status {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 16px;
+            height: 16px;
+            background: #4ecca3;
+            border-radius: 50%;
+            border: 3px solid #16213e;
+            animation: pulse 2s infinite;
+            z-index: 10;
+        }
+
+        .maximized-status.offline {
+            background: #ff0000;
+            animation: none;
         }
 
         .camera-header {
@@ -138,28 +300,28 @@
 <body>
     <div class="container">
         <div class="right-half">
-            <div class="camera-feed">
+            <div class="camera-feed" onclick="maximizeCamera(1)">
                 <div class="camera-header" id="camera1-header">Camera 1</div>
                 <div class="camera-display">
                     <div class="status-indicator" id="camera1-status"></div>
                     <img class="camera-image" id="camera1-video" src="" alt="Camera 1 Feed">
                 </div>
             </div>
-            <div class="camera-feed">
+            <div class="camera-feed" onclick="maximizeCamera(2)">
                 <div class="camera-header" id="camera2-header">Camera 2</div>
                 <div class="camera-display">
                     <div class="status-indicator" id="camera2-status"></div>
                     <img class="camera-image" id="camera2-video" src="" alt="Camera 2 Feed">
                 </div>
             </div>
-            <div class="camera-feed">
+            <div class="camera-feed" onclick="maximizeCamera(3)">
                 <div class="camera-header" id="camera3-header">Camera 3</div>
                 <div class="camera-display">
                     <div class="status-indicator" id="camera3-status"></div>
                     <img class="camera-image" id="camera3-video" src="" alt="Camera 3 Feed">
                 </div>
             </div>
-            <div class="camera-feed">
+            <div class="camera-feed" onclick="maximizeCamera(4)">
                 <div class="camera-header" id="camera4-header">Camera 4</div>
                 <div class="camera-display">
                     <div class="status-indicator" id="camera4-status"></div>
@@ -168,6 +330,28 @@
             </div>
         </div>
         <div class="left-half"></div>
+    </div>
+
+    <!-- Maximized Camera Overlay -->
+    <div class="camera-maximized-overlay" id="maximized-overlay">
+        <div class="maximized-content">
+            <div class="maximized-header">
+                <div class="maximized-title" id="maximized-title">Camera 1</div>
+                <button class="close-button" onclick="closeMaximized()">✕ Close</button>
+            </div>
+            <div class="maximized-video-container">
+                <div class="video-panel">
+                    <div class="maximized-status" id="maximized-status"></div>
+                    <img class="maximized-video" id="maximized-video" src="" alt="Maximized Camera Feed">
+                </div>
+                <div class="metadata-panel" id="metadata-panel">
+                    <h3>📡 Camera API Response</h3>
+                    <div id="metadata-content">
+                        <div class="json-display">Loading...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -464,6 +648,217 @@
             clearAlarm: manualClearAlarm,
             clearAll: manualClearAllAlarms
         };
+
+        // Camera maximize functionality
+        let currentMaximizedCamera = null;
+        let metadataUpdateInterval = null;
+
+        async function fetchCameraMetadata(cameraNum) {
+            try {
+                const response = await fetch(`${API_URL}/status`);
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.cameras[cameraNum];
+                }
+            } catch (error) {
+                console.error('Error fetching camera metadata:', error);
+            }
+            return null;
+        }
+
+        function syntaxHighlightJSON(json) {
+            if (typeof json !== 'string') {
+                json = JSON.stringify(json, null, 2);
+            }
+            
+            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                let cls = 'json-number';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'json-key';
+                    } else {
+                        cls = 'json-string';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'json-boolean';
+                } else if (/null/.test(match)) {
+                    cls = 'json-null';
+                }
+                return '<span class="' + cls + '">' + match + '</span>';
+            });
+        }
+
+        function updateMetadataDisplay(metadata, cameraNum) {
+            const metadataContent = document.getElementById('metadata-content');
+            
+            if (!metadata) {
+                metadataContent.innerHTML = `
+                    <div class="json-display">
+                        <span class="json-key">"status"</span>: <span class="json-string">"offline"</span>,
+                        <span class="json-key">"camera"</span>: <span class="json-number">${cameraNum}</span>,
+                        <span class="json-key">"error"</span>: <span class="json-string">"No data available"</span>
+                    </div>
+                `;
+                return;
+            }
+
+            // Create full JSON object with additional info
+            const fullData = {
+                camera_number: cameraNum,
+                timestamp: new Date().toISOString(),
+                status: {
+                    online: metadata.online,
+                    alarm_active: metadata.alarm_active,
+                    has_frames: metadata.has_frames,
+                    last_seen_seconds_ago: metadata.last_seen_seconds_ago
+                },
+                stream_url: `${API_URL}/video_feed/${cameraNum}`,
+                api_endpoints: {
+                    video_feed: `/video_feed/${cameraNum}`,
+                    trigger_alarm: `/camera/trigger_alarm/${cameraNum}`,
+                    clear_alarm: `/camera/clear_alarm/${cameraNum}`,
+                    heartbeat: `/camera/heartbeat/${cameraNum}`,
+                    push_frame: `/camera/push_frame/${cameraNum}`
+                }
+            };
+
+            const highlighted = syntaxHighlightJSON(fullData);
+            
+            metadataContent.innerHTML = `<div class="json-display">${highlighted}</div>`;
+        }
+
+        function maximizeCamera(cameraNum) {
+            currentMaximizedCamera = cameraNum;
+            
+            const overlay = document.getElementById('maximized-overlay');
+            const title = document.getElementById('maximized-title');
+            const video = document.getElementById('maximized-video');
+            const status = document.getElementById('maximized-status');
+            
+            // Set title
+            title.textContent = `Camera ${cameraNum}`;
+            
+            // Copy alarm state
+            const header = document.getElementById(`camera${cameraNum}-header`);
+            if (header.classList.contains('alarm')) {
+                title.classList.add('alarm');
+            } else {
+                title.classList.remove('alarm');
+            }
+            
+            // Copy online/offline status
+            const statusIndicator = document.getElementById(`camera${cameraNum}-status`);
+            if (statusIndicator.classList.contains('offline')) {
+                status.classList.add('offline');
+            } else {
+                status.classList.remove('offline');
+            }
+            
+            // Set video source
+            video.src = `${API_URL}/video_feed/${cameraNum}`;
+            
+            // Show overlay
+            overlay.classList.add('active');
+            
+            // Start metadata updates
+            fetchCameraMetadata(cameraNum).then(metadata => {
+                updateMetadataDisplay(metadata, cameraNum);
+            });
+            
+            // Update metadata every second
+            metadataUpdateInterval = setInterval(async () => {
+                const metadata = await fetchCameraMetadata(cameraNum);
+                updateMetadataDisplay(metadata, cameraNum);
+            }, 1000);
+            
+            // Add error handler
+            video.onerror = function() {
+                console.error(`Failed to load maximized camera ${cameraNum} stream`);
+                status.classList.add('offline');
+            };
+            
+            video.onload = function() {
+                status.classList.remove('offline');
+            };
+        }
+
+        function closeMaximized() {
+            const overlay = document.getElementById('maximized-overlay');
+            const video = document.getElementById('maximized-video');
+            
+            overlay.classList.remove('active');
+            video.src = '';
+            currentMaximizedCamera = null;
+            
+            // Stop metadata updates
+            if (metadataUpdateInterval) {
+                clearInterval(metadataUpdateInterval);
+                metadataUpdateInterval = null;
+            }
+        }
+
+        // Update maximized view when alarm state changes
+        function updateMaximizedAlarmState() {
+            if (currentMaximizedCamera) {
+                const title = document.getElementById('maximized-title');
+                const header = document.getElementById(`camera${currentMaximizedCamera}-header`);
+                
+                if (header.classList.contains('alarm')) {
+                    title.classList.add('alarm');
+                } else {
+                    title.classList.remove('alarm');
+                }
+            }
+        }
+
+        // Update maximized view when online status changes
+        function updateMaximizedOnlineState() {
+            if (currentMaximizedCamera) {
+                const status = document.getElementById('maximized-status');
+                const statusIndicator = document.getElementById(`camera${currentMaximizedCamera}-status`);
+                
+                if (statusIndicator.classList.contains('offline')) {
+                    status.classList.add('offline');
+                } else {
+                    status.classList.remove('offline');
+                }
+            }
+        }
+
+        // Override trigger/clear alarm functions to update maximized view
+        const originalTriggerAlarm = triggerAlarm;
+        triggerAlarm = function(cameraNumber) {
+            originalTriggerAlarm(cameraNumber);
+            updateMaximizedAlarmState();
+        };
+
+        const originalClearAlarm = clearAlarm;
+        clearAlarm = function(cameraNumber) {
+            originalClearAlarm(cameraNumber);
+            updateMaximizedAlarmState();
+        };
+
+        const originalClearAllAlarms = clearAllAlarms;
+        clearAllAlarms = function() {
+            originalClearAllAlarms();
+            updateMaximizedAlarmState();
+        };
+
+        // Close maximized view with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && currentMaximizedCamera) {
+                closeMaximized();
+            }
+        });
+
+        // Periodically update maximized view status
+        setInterval(() => {
+            if (currentMaximizedCamera) {
+                updateMaximizedOnlineState();
+            }
+        }, 1000);
     </script>
 </body>
 </html>
