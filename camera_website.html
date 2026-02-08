@@ -284,7 +284,9 @@
     <script>
         // Configuration (hardcoded for 16 cameras)
         const CAMERA_CONFIG = {
-            apiUrl: 'http://cam.hackabot4stem.com:5000',
+            apiUrl: 'http://api.hackabot4stem.com:5000',
+            commandPollInterval: 1000,  // Poll for commands every 1 second
+            statusPollInterval: 5000,   // Check camera status every 5 seconds
             cameras: [
                 { id: 1, name: 'Camera 1' },
                 { id: 2, name: 'Camera 2' },
@@ -436,9 +438,11 @@
                     if (data.command) {
                         handleCommand(data.command);
                     }
+                } else {
+                    console.warn(`Commands poll failed: ${response.status} ${response.statusText}`);
                 }
             } catch (error) {
-                console.error('Error polling for commands:', error);
+                console.error('Error polling for commands:', error.message || error);
             }
             
             // Poll every interval from config
@@ -494,9 +498,11 @@
                     
                     // Update maximized view if one is open
                     updateMaximizedOnlineState();
+                } else {
+                    console.warn(`Status check failed: ${response.status} ${response.statusText}`);
                 }
             } catch (error) {
-                console.error('Error checking camera status:', error);
+                console.error('Error checking camera status:', error.message || error);
             }
             
             // Check status at interval from config
