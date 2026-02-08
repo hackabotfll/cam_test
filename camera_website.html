@@ -15,32 +15,42 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             height: 100vh;
             overflow: hidden;
+            background: #16213e;
         }
 
         .container {
             display: flex;
             height: 100vh;
+            width: 100vw;
+            overflow-x: auto;
+            overflow-y: hidden;
+            background: #16213e;
         }
 
         .right-half {
-            flex: 1;
-            width: 100vw;
-            background: #1a1a2e;
-            padding: 20px;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(2, 1fr);
-            gap: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background: #16213e;
+            padding: 0;
+            gap: 0;
         }
 
         .camera-feed {
             background: #16213e;
-            border-radius: 12px;
-            padding: 15px;
+            border-radius: 0;
+            padding: 10px;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            box-shadow: none;
             transition: transform 0.2s;
+            border: none;
+            height: 25vh;
+            min-height: 25vh;
+            max-height: 25vh;
+            width: 25vh;
+            min-width: 25vh;
+            flex-shrink: 0;
         }
 
         .camera-feed:hover {
@@ -164,11 +174,13 @@
         .camera-header {
             color: #4ecca3;
             font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 10px;
-            padding-bottom: 10px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
             border-bottom: 2px solid #0f3460;
             transition: color 0.3s;
+            text-align: center;
+            flex-shrink: 0;
         }
 
         .camera-header.alarm {
@@ -197,6 +209,7 @@
             justify-content: center;
             position: relative;
             overflow: hidden;
+            aspect-ratio: 1 / 1;
         }
 
         .camera-video {
@@ -247,63 +260,8 @@
 </head>
 <body>
     <div class="container">
-        <div class="right-half">
-            <div class="camera-feed" onclick="maximizeCamera(1)">
-                <div class="camera-header" id="camera1-header">Camera 1</div>
-                <div class="camera-display">
-                    <div class="status-indicator" id="camera1-status"></div>
-                    <img class="camera-image" id="camera1-video" src="" alt="Camera 1 Feed">
-                </div>
-            </div>
-            <div class="camera-feed" onclick="maximizeCamera(2)">
-                <div class="camera-header" id="camera2-header">Camera 2</div>
-                <div class="camera-display">
-                    <div class="status-indicator" id="camera2-status"></div>
-                    <img class="camera-image" id="camera2-video" src="" alt="Camera 2 Feed">
-                </div>
-            </div>
-            <div class="camera-feed" onclick="maximizeCamera(3)">
-                <div class="camera-header" id="camera3-header">Camera 3</div>
-                <div class="camera-display">
-                    <div class="status-indicator" id="camera3-status"></div>
-                    <img class="camera-image" id="camera3-video" src="" alt="Camera 3 Feed">
-                </div>
-            </div>
-            <div class="camera-feed" onclick="maximizeCamera(4)">
-                <div class="camera-header" id="camera4-header">Camera 4</div>
-                <div class="camera-display">
-                    <div class="status-indicator" id="camera4-status"></div>
-                    <img class="camera-image" id="camera4-video" src="" alt="Camera 4 Feed">
-                </div>
-            </div>
-            <div class="camera-feed" onclick="maximizeCamera(5)">
-                <div class="camera-header" id="camera5-header">Camera 5</div>
-                <div class="camera-display">
-                    <div class="status-indicator" id="camera5-status"></div>
-                    <img class="camera-image" id="camera5-video" src="" alt="Camera 5 Feed">
-                </div>
-            </div>
-            <div class="camera-feed" onclick="maximizeCamera(6)">
-                <div class="camera-header" id="camera6-header">Camera 6</div>
-                <div class="camera-display">
-                    <div class="status-indicator" id="camera6-status"></div>
-                    <img class="camera-image" id="camera6-video" src="" alt="Camera 6 Feed">
-                </div>
-            </div>
-            <div class="camera-feed" onclick="maximizeCamera(7)">
-                <div class="camera-header" id="camera7-header">Camera 7</div>
-                <div class="camera-display">
-                    <div class="status-indicator" id="camera7-status"></div>
-                    <img class="camera-image" id="camera7-video" src="" alt="Camera 7 Feed">
-                </div>
-            </div>
-            <div class="camera-feed" onclick="maximizeCamera(8)">
-                <div class="camera-header" id="camera8-header">Camera 8</div>
-                <div class="camera-display">
-                    <div class="status-indicator" id="camera8-status"></div>
-                    <img class="camera-image" id="camera8-video" src="" alt="Camera 8 Feed">
-                </div>
-            </div>
+        <div class="right-half" id="camera-container">
+            <!-- Cameras will be dynamically generated here -->
         </div>
     </div>
 
@@ -324,14 +282,63 @@
     </div>
 
     <script>
-        // API Configuration
-        const API_URL = 'https://api.hackabot4stem.com';
+        // Configuration (hardcoded for 16 cameras)
+        const CAMERA_CONFIG = {
+            apiUrl: 'http://cam.hackabot4stem.com:5000',
+            cameras: [
+                { id: 1, name: 'Camera 1' },
+                { id: 2, name: 'Camera 2' },
+                { id: 3, name: 'Camera 3' },
+                { id: 4, name: 'Camera 4' },
+                { id: 5, name: 'Camera 5' },
+                { id: 6, name: 'Camera 6' },
+                { id: 7, name: 'Camera 7' },
+                { id: 8, name: 'Camera 8' },
+                { id: 9, name: 'Camera 9' },
+                { id: 10, name: 'Camera 10' },
+                { id: 11, name: 'Camera 11' },
+                { id: 12, name: 'Camera 12' },
+                { id: 13, name: 'Camera 13' },
+                { id: 14, name: 'Camera 14' },
+                { id: 15, name: 'Camera 15' },
+                { id: 16, name: 'Camera 16' }
+            ]
+        };
+        
+        const API_URL = CAMERA_CONFIG.apiUrl;
         
         // Create alarm sound using Web Audio API
         let audioContext;
         let alarmOscillator;
         let alarmGain;
         let isAlarmPlaying = false;
+
+        // Generate camera HTML dynamically from config
+        function generateCameras() {
+            const container = document.getElementById('camera-container');
+            container.innerHTML = '';
+            
+            CAMERA_CONFIG.cameras.forEach(camera => {
+                const cameraDiv = document.createElement('div');
+                cameraDiv.className = 'camera-feed';
+                cameraDiv.onclick = () => maximizeCamera(camera.id);
+                
+                cameraDiv.innerHTML = `
+                    <div class="camera-header" id="camera${camera.id}-header">${camera.name}</div>
+                    <div class="camera-display">
+                        <div class="status-indicator" id="camera${camera.id}-status"></div>
+                        <img class="camera-image" id="camera${camera.id}-video" src="" alt="${camera.name} Feed">
+                    </div>
+                `;
+                
+                container.appendChild(cameraDiv);
+            });
+        }
+
+        // Initialize cameras on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            generateCameras();
+        });
 
         function initAudio() {
             if (!audioContext) {
@@ -355,7 +362,7 @@
             // Alarm sound configuration (alternating frequencies)
             alarmOscillator.type = 'sine';
             alarmOscillator.frequency.value = 800;
-            alarmGain.gain.value = 0.3;
+            alarmGain.gain.value = CAMERA_CONFIG.alarmVolume;
 
             alarmOscillator.start();
 
@@ -434,8 +441,8 @@
                 console.error('Error polling for commands:', error);
             }
             
-            // Poll every 500ms
-            setTimeout(pollForCommands, 500);
+            // Poll every interval from config
+            setTimeout(pollForCommands, CAMERA_CONFIG.commandPollInterval);
         }
 
         function handleCommand(command) {
@@ -463,7 +470,8 @@
                     const data = await response.json();
                     
                     // Update status indicators based on camera online status
-                    for (let i = 1; i <= 8; i++) {
+                    CAMERA_CONFIG.cameras.forEach(camera => {
+                        const i = camera.id;
                         const status = document.getElementById(`camera${i}-status`);
                         const header = document.getElementById(`camera${i}-header`);
                         
@@ -482,7 +490,7 @@
                                 }
                             }
                         }
-                    }
+                    });
                     
                     // Update maximized view if one is open
                     updateMaximizedOnlineState();
@@ -491,8 +499,8 @@
                 console.error('Error checking camera status:', error);
             }
             
-            // Check status every 5 seconds
-            setTimeout(checkCameraStatus, 5000);
+            // Check status at interval from config
+            setTimeout(checkCameraStatus, CAMERA_CONFIG.statusPollInterval);
         }
 
         // Initialize camera feeds from relay server
@@ -505,8 +513,9 @@
                     const data = await response.json();
                     console.log('Camera streams:', data);
                     
-                    // Set up each camera (now supporting 8 cameras)
-                    for (let i = 1; i <= 8; i++) {
+                    // Set up each camera from config
+                    CAMERA_CONFIG.cameras.forEach(camera => {
+                        const i = camera.id;
                         const img = document.getElementById(`camera${i}-video`);
                         const status = document.getElementById(`camera${i}-status`);
                         const header = document.getElementById(`camera${i}-header`);
@@ -555,7 +564,7 @@
                                 placeholder.remove();
                             }
                         };
-                    }
+                    });
                 } else {
                     console.error('Failed to fetch camera streams from relay');
                     // Fall back to default configuration
@@ -570,7 +579,8 @@
         // Fallback camera setup if relay is unavailable
         function fallbackCameraSetup() {
             console.log('Using fallback camera setup');
-            for (let i = 1; i <= 8; i++) {
+            CAMERA_CONFIG.cameras.forEach(camera => {
+                const i = camera.id;
                 const img = document.getElementById(`camera${i}-video`);
                 const status = document.getElementById(`camera${i}-status`);
                 const header = document.getElementById(`camera${i}-header`);
@@ -582,7 +592,7 @@
                 if (!header.classList.contains('alarm')) {
                     header.classList.add('offline');
                 }
-            }
+            });
         }
 
         // Start polling and monitoring when page loads
