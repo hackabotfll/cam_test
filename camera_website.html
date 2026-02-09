@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Camera Monitor</title>
+    <title>Camera Monitor - Full Screen</title>
     <style>
         * {
             margin: 0;
@@ -15,50 +15,32 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             height: 100vh;
             overflow: hidden;
+            background: #1a1a2e;
         }
 
         .container {
             display: flex;
             height: 100vh;
-        }
-
-        .left-half {
-            flex: 1;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
-        .right-half {
-            flex: 1;
-            background: #1a1a2e;
-            padding: 20px;
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            grid-template-rows: repeat(2, 1fr);
-            gap: 20px;
+            width: 100vw;
         }
 
         .camera-feed {
+            width: 100%;
+            height: 100%;
             background: #16213e;
-            border-radius: 12px;
-            padding: 15px;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-            transition: transform 0.2s;
-        }
-
-        .camera-feed:hover {
-            transform: scale(1.02);
         }
 
         .camera-header {
             color: #4ecca3;
-            font-size: 18px;
+            font-size: 24px;
             font-weight: 600;
-            margin-bottom: 10px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #0f3460;
+            padding: 20px;
+            background: #0f3460;
             transition: color 0.3s;
+            position: relative;
+            z-index: 10;
         }
 
         .camera-header.alarm {
@@ -81,7 +63,6 @@
         .camera-display {
             flex: 1;
             background: #0f3460;
-            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -89,31 +70,23 @@
             overflow: hidden;
         }
 
-        .camera-video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 8px;
-        }
-
         .camera-image {
             width: 100%;
             height: 100%;
-            object-fit: cover;
-            border-radius: 8px;
+            object-fit: contain;
         }
 
         .camera-placeholder {
             color: #533483;
-            font-size: 48px;
+            font-size: 96px;
         }
 
         .status-indicator {
             position: absolute;
-            top: 10px;
-            right: 10px;
-            width: 12px;
-            height: 12px;
+            top: 20px;
+            right: 20px;
+            width: 16px;
+            height: 16px;
             background: #4ecca3;
             border-radius: 50%;
             animation: pulse 2s infinite;
@@ -137,37 +110,13 @@
 </head>
 <body>
     <div class="container">
-        <div class="right-half">
-            <div class="camera-feed">
-                <div class="camera-header" id="camera1-header">Camera 1</div>
-                <div class="camera-display">
-                    <div class="status-indicator" id="camera1-status"></div>
-                    <img class="camera-image" id="camera1-video" src="" alt="Camera 1 Feed">
-                </div>
-            </div>
-            <div class="camera-feed">
-                <div class="camera-header" id="camera2-header">Camera 2</div>
-                <div class="camera-display">
-                    <div class="status-indicator" id="camera2-status"></div>
-                    <img class="camera-image" id="camera2-video" src="" alt="Camera 2 Feed">
-                </div>
-            </div>
-            <div class="camera-feed">
-                <div class="camera-header" id="camera3-header">Camera 3</div>
-                <div class="camera-display">
-                    <div class="status-indicator" id="camera3-status"></div>
-                    <img class="camera-image" id="camera3-video" src="" alt="Camera 3 Feed">
-                </div>
-            </div>
-            <div class="camera-feed">
-                <div class="camera-header" id="camera4-header">Camera 4</div>
-                <div class="camera-display">
-                    <div class="status-indicator" id="camera4-status"></div>
-                    <img class="camera-image" id="camera4-video" src="" alt="Camera 4 Feed">
-                </div>
+        <div class="camera-feed">
+            <div class="camera-header" id="camera1-header">Camera 1</div>
+            <div class="camera-display">
+                <div class="status-indicator" id="camera1-status"></div>
+                <img class="camera-image" id="camera1-video" src="" alt="Camera 1 Feed">
             </div>
         </div>
-        <div class="left-half"></div>
     </div>
 
     <script>
@@ -237,30 +186,17 @@
             }
         }
 
-        // Trigger alarm for a specific camera
-        function triggerAlarm(cameraNumber) {
-            const header = document.getElementById(`camera${cameraNumber}-header`);
+        // Trigger alarm for camera 1
+        function triggerAlarm() {
+            const header = document.getElementById('camera1-header');
             header.classList.add('alarm');
             playAlarmSound();
         }
 
-        // Clear alarm for a specific camera
-        function clearAlarm(cameraNumber) {
-            const header = document.getElementById(`camera${cameraNumber}-header`);
+        // Clear alarm for camera 1
+        function clearAlarm() {
+            const header = document.getElementById('camera1-header');
             header.classList.remove('alarm');
-            
-            // Check if any camera still has an alarm
-            const anyAlarm = document.querySelector('.camera-header.alarm');
-            if (!anyAlarm) {
-                stopAlarmSound();
-            }
-        }
-
-        // Clear all alarms
-        function clearAllAlarms() {
-            document.querySelectorAll('.camera-header').forEach(header => {
-                header.classList.remove('alarm');
-            });
             stopAlarmSound();
         }
 
@@ -288,14 +224,10 @@
         function handleCommand(command) {
             console.log('Received command:', command);
             
-            if (command === 'clear_all_alarms') {
-                clearAllAlarms();
-            } else if (command.startsWith('trigger_alarm_')) {
-                const cameraNum = command.replace('trigger_alarm_', '');
-                triggerAlarm(parseInt(cameraNum));
-            } else if (command.startsWith('clear_alarm_')) {
-                const cameraNum = command.replace('clear_alarm_', '');
-                clearAlarm(parseInt(cameraNum));
+            if (command === 'clear_all_alarms' || command === 'clear_alarm_1') {
+                clearAlarm();
+            } else if (command === 'trigger_alarm_1') {
+                triggerAlarm();
             }
         }
 
@@ -306,24 +238,22 @@
                 if (response.ok) {
                     const data = await response.json();
                     
-                    // Update status indicators based on camera online status
-                    for (let i = 1; i <= 4; i++) {
-                        const status = document.getElementById(`camera${i}-status`);
-                        const header = document.getElementById(`camera${i}-header`);
+                    // Update status indicator based on camera online status
+                    const status = document.getElementById('camera1-status');
+                    const header = document.getElementById('camera1-header');
+                    
+                    if (data.cameras && data.cameras[1]) {
+                        const camera = data.cameras[1];
                         
-                        if (data.cameras && data.cameras[i]) {
-                            const camera = data.cameras[i];
-                            
-                            if (camera.online) {
-                                status.classList.remove('offline');
-                                if (!header.classList.contains('alarm')) {
-                                    header.classList.remove('offline');
-                                }
-                            } else {
-                                status.classList.add('offline');
-                                if (!header.classList.contains('alarm')) {
-                                    header.classList.add('offline');
-                                }
+                        if (camera.online) {
+                            status.classList.remove('offline');
+                            if (!header.classList.contains('alarm')) {
+                                header.classList.remove('offline');
+                            }
+                        } else {
+                            status.classList.add('offline');
+                            if (!header.classList.contains('alarm')) {
+                                header.classList.add('offline');
                             }
                         }
                     }
@@ -336,74 +266,68 @@
             setTimeout(checkCameraStatus, 5000);
         }
 
-        // Initialize camera feeds from relay server
-        async function initializeCameras() {
+        // Initialize camera feed from relay server
+        async function initializeCamera() {
             try {
-                // Fetch camera stream URLs from relay server
                 const response = await fetch(`${API_URL}/api/camera_streams`);
                 
                 if (response.ok) {
                     const data = await response.json();
                     console.log('Camera streams:', data);
                     
-                    // Set up each camera
-                    for (let i = 1; i <= 4; i++) {
-                        const img = document.getElementById(`camera${i}-video`);
-                        const status = document.getElementById(`camera${i}-status`);
-                        const header = document.getElementById(`camera${i}-header`);
+                    const img = document.getElementById('camera1-video');
+                    const status = document.getElementById('camera1-status');
+                    const header = document.getElementById('camera1-header');
+                    
+                    // Use the relay server's video proxy endpoint
+                    img.src = `${API_URL}/video_feed/1`;
+                    
+                    // Add error handler
+                    img.onerror = function() {
+                        console.error('Failed to load camera 1 stream');
+                        status.classList.add('offline');
+                        if (!header.classList.contains('alarm')) {
+                            header.classList.add('offline');
+                        }
                         
-                        // Use the relay server's video proxy endpoint
-                        // This way the video comes through cam.hackabot4stem.com domain
-                        img.src = `${API_URL}/video_feed/${i}`;
+                        this.style.display = 'none';
+                        const display = this.parentElement;
                         
-                        // Add error handler
-                        img.onerror = function() {
-                            console.error(`Failed to load camera ${i} stream`);
-                            status.classList.add('offline');
-                            if (!header.classList.contains('alarm')) {
-                                header.classList.add('offline');
-                            }
-                            
-                            this.style.display = 'none';
-                            const display = this.parentElement;
-                            
-                            // Remove any existing placeholder
-                            const existingPlaceholder = display.querySelector('.camera-placeholder');
-                            if (existingPlaceholder) {
-                                existingPlaceholder.remove();
-                            }
-                            
-                            const placeholder = document.createElement('div');
-                            placeholder.className = 'camera-placeholder';
-                            placeholder.textContent = '📹';
-                            placeholder.style.color = '#ff6b6b';
-                            display.appendChild(placeholder);
-                        };
+                        // Remove any existing placeholder
+                        const existingPlaceholder = display.querySelector('.camera-placeholder');
+                        if (existingPlaceholder) {
+                            existingPlaceholder.remove();
+                        }
                         
-                        // Add load handler
-                        img.onload = function() {
-                            console.log(`Camera ${i} stream loaded successfully`);
-                            status.classList.remove('offline');
-                            if (!header.classList.contains('alarm')) {
-                                header.classList.remove('offline');
-                            }
-                            this.style.display = 'block';
-                            
-                            // Remove placeholder if it exists
-                            const display = this.parentElement;
-                            const placeholder = display.querySelector('.camera-placeholder');
-                            if (placeholder) {
-                                placeholder.remove();
-                            }
-                        };
-                    }
+                        const placeholder = document.createElement('div');
+                        placeholder.className = 'camera-placeholder';
+                        placeholder.textContent = '📹';
+                        placeholder.style.color = '#ff6b6b';
+                        display.appendChild(placeholder);
+                    };
+                    
+                    // Add load handler
+                    img.onload = function() {
+                        console.log('Camera 1 stream loaded successfully');
+                        status.classList.remove('offline');
+                        if (!header.classList.contains('alarm')) {
+                            header.classList.remove('offline');
+                        }
+                        this.style.display = 'block';
+                        
+                        // Remove placeholder if it exists
+                        const display = this.parentElement;
+                        const placeholder = display.querySelector('.camera-placeholder');
+                        if (placeholder) {
+                            placeholder.remove();
+                        }
+                    };
                 } else {
                     console.error('Failed to fetch camera streams from relay');
-                    // Fall back to default configuration
                     fallbackCameraSetup();
                 }
             } catch (error) {
-                console.error('Error initializing cameras:', error);
+                console.error('Error initializing camera:', error);
                 fallbackCameraSetup();
             }
         }
@@ -411,18 +335,15 @@
         // Fallback camera setup if relay is unavailable
         function fallbackCameraSetup() {
             console.log('Using fallback camera setup');
-            for (let i = 1; i <= 4; i++) {
-                const img = document.getElementById(`camera${i}-video`);
-                const status = document.getElementById(`camera${i}-status`);
-                const header = document.getElementById(`camera${i}-header`);
-                
-                // Use relay proxy as fallback
-                img.src = `${API_URL}/video_feed/${i}`;
-                
-                status.classList.add('offline');
-                if (!header.classList.contains('alarm')) {
-                    header.classList.add('offline');
-                }
+            const img = document.getElementById('camera1-video');
+            const status = document.getElementById('camera1-status');
+            const header = document.getElementById('camera1-header');
+            
+            img.src = `${API_URL}/video_feed/1`;
+            
+            status.classList.add('offline');
+            if (!header.classList.contains('alarm')) {
+                header.classList.add('offline');
             }
         }
 
@@ -431,38 +352,30 @@
             console.log('Initializing camera system...');
             console.log('API URL:', API_URL);
             
-            initializeCameras();
+            initializeCamera();
             pollForCommands();
             checkCameraStatus();
         });
 
         // Manual trigger functions (for testing/debugging)
-        function manualTriggerAlarm(cameraNum) {
-            fetch(`${API_URL}/api/trigger_alarm_${cameraNum}`, { method: 'POST' })
+        function manualTriggerAlarm() {
+            fetch(`${API_URL}/api/trigger_alarm_1`, { method: 'POST' })
                 .then(response => response.json())
                 .then(data => console.log('Manual trigger:', data))
                 .catch(error => console.error('Manual trigger error:', error));
         }
 
-        function manualClearAlarm(cameraNum) {
-            fetch(`${API_URL}/api/clear_alarm_${cameraNum}`, { method: 'POST' })
+        function manualClearAlarm() {
+            fetch(`${API_URL}/api/clear_alarm_1`, { method: 'POST' })
                 .then(response => response.json())
                 .then(data => console.log('Manual clear:', data))
                 .catch(error => console.error('Manual clear error:', error));
         }
 
-        function manualClearAllAlarms() {
-            fetch(`${API_URL}/api/clear_all_alarms`, { method: 'POST' })
-                .then(response => response.json())
-                .then(data => console.log('Manual clear all:', data))
-                .catch(error => console.error('Manual clear all error:', error));
-        }
-
         // Expose functions to console for debugging
         window.cameraDebug = {
             triggerAlarm: manualTriggerAlarm,
-            clearAlarm: manualClearAlarm,
-            clearAll: manualClearAllAlarms
+            clearAlarm: manualClearAlarm
         };
     </script>
 </body>
