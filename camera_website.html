@@ -15,172 +15,50 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             height: 100vh;
             overflow: hidden;
-            background: #16213e;
         }
 
         .container {
             display: flex;
             height: 100vh;
-            width: 100vw;
-            overflow-x: auto;
-            overflow-y: hidden;
-            background: #16213e;
+        }
+
+        .left-half {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
 
         .right-half {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            background: #16213e;
-            padding: 0;
-            gap: 0;
+            flex: 1;
+            background: #1a1a2e;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 20px;
         }
 
         .camera-feed {
             background: #16213e;
-            border-radius: 0;
-            padding: 10px;
+            border-radius: 12px;
+            padding: 15px;
             display: flex;
             flex-direction: column;
-            box-shadow: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
             transition: transform 0.2s;
-            border: none;
-            height: 25vh;
-            min-height: 25vh;
-            max-height: 25vh;
-            width: 25vh;
-            min-width: 25vh;
-            flex-shrink: 0;
         }
 
         .camera-feed:hover {
             transform: scale(1.02);
-            cursor: pointer;
-        }
-
-        /* Maximized camera view */
-        .camera-maximized-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.95);
-            z-index: 1000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            animation: fadeIn 0.2s;
-        }
-
-        .camera-maximized-overlay.active {
-            display: flex;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .maximized-content {
-            width: 100vw;
-            height: 100vh;
-            background: #16213e;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-
-        .maximized-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .maximized-title {
-            color: #4ecca3;
-            font-size: 24px;
-            font-weight: 600;
-        }
-
-        .maximized-title.offline {
-            color: #ff0000;
-        }
-
-        .maximized-title.alarm {
-            animation: flashRed 0.5s infinite;
-        }
-
-        .close-button {
-            background: #ff4757;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .close-button:hover {
-            background: #ff6b81;
-        }
-
-        .maximized-video-container {
-            flex: 1;
-            background: #0f3460;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .video-panel {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
-        .maximized-video {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
-
-        .maximized-status {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 16px;
-            height: 16px;
-            background: #4ecca3;
-            border-radius: 50%;
-            border: 3px solid #16213e;
-            animation: pulse 2s infinite;
-            z-index: 10;
-        }
-
-        .maximized-status.offline {
-            background: #ff0000;
-            animation: none;
         }
 
         .camera-header {
             color: #4ecca3;
             font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            padding-bottom: 8px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
             border-bottom: 2px solid #0f3460;
             transition: color 0.3s;
-            text-align: center;
-            flex-shrink: 0;
         }
 
         .camera-header.alarm {
@@ -209,7 +87,6 @@
             justify-content: center;
             position: relative;
             overflow: hidden;
-            aspect-ratio: 1 / 1;
         }
 
         .camera-video {
@@ -260,87 +137,48 @@
 </head>
 <body>
     <div class="container">
-        <div class="right-half" id="camera-container">
-            <!-- Cameras will be dynamically generated here -->
-        </div>
-    </div>
-
-    <!-- Maximized Camera Overlay -->
-    <div class="camera-maximized-overlay" id="maximized-overlay">
-        <div class="maximized-content">
-            <div class="maximized-header">
-                <div class="maximized-title" id="maximized-title">Camera 1</div>
-                <button class="close-button" onclick="closeMaximized()">✕ Close</button>
+        <div class="right-half">
+            <div class="camera-feed">
+                <div class="camera-header" id="camera1-header">Camera 1</div>
+                <div class="camera-display">
+                    <div class="status-indicator" id="camera1-status"></div>
+                    <img class="camera-image" id="camera1-video" src="" alt="Camera 1 Feed">
+                </div>
             </div>
-            <div class="maximized-video-container">
-                <div class="video-panel">
-                    <div class="maximized-status" id="maximized-status"></div>
-                    <img class="maximized-video" id="maximized-video" src="" alt="Maximized Camera Feed">
+            <div class="camera-feed">
+                <div class="camera-header" id="camera2-header">Camera 2</div>
+                <div class="camera-display">
+                    <div class="status-indicator" id="camera2-status"></div>
+                    <img class="camera-image" id="camera2-video" src="" alt="Camera 2 Feed">
+                </div>
+            </div>
+            <div class="camera-feed">
+                <div class="camera-header" id="camera3-header">Camera 3</div>
+                <div class="camera-display">
+                    <div class="status-indicator" id="camera3-status"></div>
+                    <img class="camera-image" id="camera3-video" src="" alt="Camera 3 Feed">
+                </div>
+            </div>
+            <div class="camera-feed">
+                <div class="camera-header" id="camera4-header">Camera 4</div>
+                <div class="camera-display">
+                    <div class="status-indicator" id="camera4-status"></div>
+                    <img class="camera-image" id="camera4-video" src="" alt="Camera 4 Feed">
                 </div>
             </div>
         </div>
+        <div class="left-half"></div>
     </div>
 
     <script>
-        // Configuration (hardcoded for 16 cameras)
-        const CAMERA_CONFIG = {
-            apiUrl: 'http://api.hackabot4stem.com:5000',
-            commandPollInterval: 1000,  // Poll for commands every 1 second
-            statusPollInterval: 5000,   // Check camera status every 5 seconds
-            cameras: [
-                { id: 1, name: 'Camera 1' },
-                { id: 2, name: 'Camera 2' },
-                { id: 3, name: 'Camera 3' },
-                { id: 4, name: 'Camera 4' },
-                { id: 5, name: 'Camera 5' },
-                { id: 6, name: 'Camera 6' },
-                { id: 7, name: 'Camera 7' },
-                { id: 8, name: 'Camera 8' },
-                { id: 9, name: 'Camera 9' },
-                { id: 10, name: 'Camera 10' },
-                { id: 11, name: 'Camera 11' },
-                { id: 12, name: 'Camera 12' },
-                { id: 13, name: 'Camera 13' },
-                { id: 14, name: 'Camera 14' },
-                { id: 15, name: 'Camera 15' },
-                { id: 16, name: 'Camera 16' }
-            ]
-        };
-        
-        const API_URL = CAMERA_CONFIG.apiUrl;
+        // API Configuration
+        const API_URL = 'https://api.hackabot4stem.com';
         
         // Create alarm sound using Web Audio API
         let audioContext;
         let alarmOscillator;
         let alarmGain;
         let isAlarmPlaying = false;
-
-        // Generate camera HTML dynamically from config
-        function generateCameras() {
-            const container = document.getElementById('camera-container');
-            container.innerHTML = '';
-            
-            CAMERA_CONFIG.cameras.forEach(camera => {
-                const cameraDiv = document.createElement('div');
-                cameraDiv.className = 'camera-feed';
-                cameraDiv.onclick = () => maximizeCamera(camera.id);
-                
-                cameraDiv.innerHTML = `
-                    <div class="camera-header" id="camera${camera.id}-header">${camera.name}</div>
-                    <div class="camera-display">
-                        <div class="status-indicator" id="camera${camera.id}-status"></div>
-                        <img class="camera-image" id="camera${camera.id}-video" src="" alt="${camera.name} Feed">
-                    </div>
-                `;
-                
-                container.appendChild(cameraDiv);
-            });
-        }
-
-        // Initialize cameras on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            generateCameras();
-        });
 
         function initAudio() {
             if (!audioContext) {
@@ -364,7 +202,7 @@
             // Alarm sound configuration (alternating frequencies)
             alarmOscillator.type = 'sine';
             alarmOscillator.frequency.value = 800;
-            alarmGain.gain.value = CAMERA_CONFIG.alarmVolume;
+            alarmGain.gain.value = 0.3;
 
             alarmOscillator.start();
 
@@ -438,15 +276,13 @@
                     if (data.command) {
                         handleCommand(data.command);
                     }
-                } else {
-                    console.warn(`Commands poll failed: ${response.status} ${response.statusText}`);
                 }
             } catch (error) {
-                console.error('Error polling for commands:', error.message || error);
+                console.error('Error polling for commands:', error);
             }
             
-            // Poll every interval from config
-            setTimeout(pollForCommands, CAMERA_CONFIG.commandPollInterval);
+            // Poll every 500ms
+            setTimeout(pollForCommands, 500);
         }
 
         function handleCommand(command) {
@@ -454,15 +290,12 @@
             
             if (command === 'clear_all_alarms') {
                 clearAllAlarms();
-                updateMaximizedAlarmState();
             } else if (command.startsWith('trigger_alarm_')) {
                 const cameraNum = command.replace('trigger_alarm_', '');
                 triggerAlarm(parseInt(cameraNum));
-                updateMaximizedAlarmState();
             } else if (command.startsWith('clear_alarm_')) {
                 const cameraNum = command.replace('clear_alarm_', '');
                 clearAlarm(parseInt(cameraNum));
-                updateMaximizedAlarmState();
             }
         }
 
@@ -474,8 +307,7 @@
                     const data = await response.json();
                     
                     // Update status indicators based on camera online status
-                    CAMERA_CONFIG.cameras.forEach(camera => {
-                        const i = camera.id;
+                    for (let i = 1; i <= 4; i++) {
                         const status = document.getElementById(`camera${i}-status`);
                         const header = document.getElementById(`camera${i}-header`);
                         
@@ -494,19 +326,14 @@
                                 }
                             }
                         }
-                    });
-                    
-                    // Update maximized view if one is open
-                    updateMaximizedOnlineState();
-                } else {
-                    console.warn(`Status check failed: ${response.status} ${response.statusText}`);
+                    }
                 }
             } catch (error) {
-                console.error('Error checking camera status:', error.message || error);
+                console.error('Error checking camera status:', error);
             }
             
-            // Check status at interval from config
-            setTimeout(checkCameraStatus, CAMERA_CONFIG.statusPollInterval);
+            // Check status every 5 seconds
+            setTimeout(checkCameraStatus, 5000);
         }
 
         // Initialize camera feeds from relay server
@@ -519,9 +346,8 @@
                     const data = await response.json();
                     console.log('Camera streams:', data);
                     
-                    // Set up each camera from config
-                    CAMERA_CONFIG.cameras.forEach(camera => {
-                        const i = camera.id;
+                    // Set up each camera
+                    for (let i = 1; i <= 4; i++) {
                         const img = document.getElementById(`camera${i}-video`);
                         const status = document.getElementById(`camera${i}-status`);
                         const header = document.getElementById(`camera${i}-header`);
@@ -570,7 +396,7 @@
                                 placeholder.remove();
                             }
                         };
-                    });
+                    }
                 } else {
                     console.error('Failed to fetch camera streams from relay');
                     // Fall back to default configuration
@@ -585,8 +411,7 @@
         // Fallback camera setup if relay is unavailable
         function fallbackCameraSetup() {
             console.log('Using fallback camera setup');
-            CAMERA_CONFIG.cameras.forEach(camera => {
-                const i = camera.id;
+            for (let i = 1; i <= 4; i++) {
                 const img = document.getElementById(`camera${i}-video`);
                 const status = document.getElementById(`camera${i}-status`);
                 const header = document.getElementById(`camera${i}-header`);
@@ -598,7 +423,7 @@
                 if (!header.classList.contains('alarm')) {
                     header.classList.add('offline');
                 }
-            });
+            }
         }
 
         // Start polling and monitoring when page loads
@@ -639,122 +464,6 @@
             clearAlarm: manualClearAlarm,
             clearAll: manualClearAllAlarms
         };
-
-        // Camera maximize functionality
-        let currentMaximizedCamera = null;
-
-        function maximizeCamera(cameraNum) {
-            currentMaximizedCamera = cameraNum;
-            
-            const overlay = document.getElementById('maximized-overlay');
-            const title = document.getElementById('maximized-title');
-            const video = document.getElementById('maximized-video');
-            const status = document.getElementById('maximized-status');
-            
-            // Set title
-            title.textContent = `Camera ${cameraNum}`;
-            
-            // Copy alarm state from grid view
-            const header = document.getElementById(`camera${cameraNum}-header`);
-            if (header.classList.contains('alarm')) {
-                title.classList.add('alarm');
-            } else {
-                title.classList.remove('alarm');
-            }
-            
-            // Copy offline state from grid view  
-            if (header.classList.contains('offline')) {
-                title.classList.add('offline');
-            } else {
-                title.classList.remove('offline');
-            }
-            
-            // Copy online/offline status indicator
-            const statusIndicator = document.getElementById(`camera${cameraNum}-status`);
-            if (statusIndicator.classList.contains('offline')) {
-                status.classList.add('offline');
-            } else {
-                status.classList.remove('offline');
-            }
-            
-            // Set video source
-            video.src = `${API_URL}/video_feed/${cameraNum}`;
-            
-            // Show overlay
-            overlay.classList.add('active');
-            
-            // Add error handler
-            video.onerror = function() {
-                console.error(`Failed to load maximized camera ${cameraNum} stream`);
-                status.classList.add('offline');
-            };
-            
-            video.onload = function() {
-                status.classList.remove('offline');
-            };
-        }
-
-        function closeMaximized() {
-            const overlay = document.getElementById('maximized-overlay');
-            const video = document.getElementById('maximized-video');
-            
-            overlay.classList.remove('active');
-            video.src = '';
-            currentMaximizedCamera = null;
-        }
-
-        // Update maximized view when alarm state changes
-        function updateMaximizedAlarmState() {
-            if (currentMaximizedCamera) {
-                const title = document.getElementById('maximized-title');
-                const header = document.getElementById(`camera${currentMaximizedCamera}-header`);
-                
-                // Sync alarm state
-                if (header.classList.contains('alarm')) {
-                    title.classList.add('alarm');
-                } else {
-                    title.classList.remove('alarm');
-                }
-                
-                // Sync offline state
-                if (header.classList.contains('offline')) {
-                    title.classList.add('offline');
-                } else {
-                    title.classList.remove('offline');
-                }
-            }
-        }
-
-        // Update maximized view when online status changes
-        function updateMaximizedOnlineState() {
-            if (currentMaximizedCamera) {
-                const title = document.getElementById('maximized-title');
-                const status = document.getElementById('maximized-status');
-                const header = document.getElementById(`camera${currentMaximizedCamera}-header`);
-                const statusIndicator = document.getElementById(`camera${currentMaximizedCamera}-status`);
-                
-                // Sync status indicator (green/red dot)
-                if (statusIndicator.classList.contains('offline')) {
-                    status.classList.add('offline');
-                } else {
-                    status.classList.remove('offline');
-                }
-                
-                // Sync title offline state (red text)
-                if (header.classList.contains('offline')) {
-                    title.classList.add('offline');
-                } else {
-                    title.classList.remove('offline');
-                }
-            }
-        }
-
-        // Close maximized view with Escape key
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape' && currentMaximizedCamera) {
-                closeMaximized();
-            }
-        });
     </script>
 </body>
 </html>
